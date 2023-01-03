@@ -43,7 +43,7 @@ class Option extends Model
         return $this->belongsTo(Poll::class);
     }
     public function choices(){
-        return $this->hasMany(Choice::class, Option::class);
+        return $this->hasMany(Choice::class);
     }
 
     /*

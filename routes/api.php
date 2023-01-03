@@ -31,4 +31,5 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('take_poll', [PollController::class, 'takePoll']);
     Route::get('list_polls', [PollController::class, 'listPolls']);
     Route::get('list_owner_polls', [PollController::class, 'listOwnerPolls']);
+    Route::get('get_owner_poll/{poll}', [PollController::class, 'getOwnerPoll']);
 });

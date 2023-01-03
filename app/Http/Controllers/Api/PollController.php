@@ -14,11 +14,15 @@ class PollController extends Controller
 {
     public function createPoll(Request $request)
     {
-        $this->validate($request, [
-            'question' => 'required|string',
-            'options' => 'required|array',
-            'options.*' => 'required|string'
-        ]);
+        $validator = Validator::make($request->all(), [
+                'question' => 'required|string',
+                'options' => 'required|array',
+                'options.*' => 'required|string'
+            ]
+        );
+        if ($validator->fails()) {
+            return response()->json(['message' => $validator->errors()->first(), 'items' => $validator->errors()->messages()], 220);
+        }
         $data = $request->only('question');
         $data['user_id'] = auth()->id();
         $data['count'] = 0;
@@ -50,16 +54,9 @@ class PollController extends Controller
             ]
         );
         if ($validator->fails()) {
-            return response()->json(['message' => $validator->errors()->first(), 'items' => $validator->errors()->messages()]);
+            return response()->json(['message' => $validator->errors()->first(), 'items' => $validator->errors()->messages()], 220);
         }
-
         Choice::query()->create(['option_id' => $request->option_id, 'poll_id' => $request->poll_id, 'user_id' => auth()->id()]);
-
-        $poll = Poll::query()->find($request->poll_id);
-        $poll->update(['count' => $poll->count + 1]);
-
-        $option = Option::query()->find($request->option_id);
-        $option->update(['count' => $option->count + 1]);
 
         return response()->json(['message' => 'success', 'items' => []]);
     }
@@ -74,5 +71,11 @@ class PollController extends Controller
     {
         $polls = Poll::query()->where('user_id', auth()->id())->orderByDesc('id')->get();
         return response()->json(['message' => 'success', 'items' => $polls]);
+    }
+
+    public function getOwnerPoll($poll)
+    {
+        $poll = Poll::query()->where('user_id', auth()->id())->with('options.choices')->find($poll);
+        return response()->json(['message' => 'success', 'items' => $poll]);
     }
 }
